@@ -635,14 +635,12 @@ export function ReversePromptHome({
             <span className="mx-2 text-zinc-300" aria-hidden>
               ·
             </span>
-            <a
-              href="https://discord.gg/eHN86K7rBj"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/sponsor"
               className="font-medium text-[#d31611] underline decoration-[#d31611] underline-offset-2 transition-colors hover:text-[#b0120e] hover:decoration-[#b0120e]"
             >
-              Discord
-            </a>
+              Advertise
+            </Link>
           </p>
         </footer>
       ) : null}

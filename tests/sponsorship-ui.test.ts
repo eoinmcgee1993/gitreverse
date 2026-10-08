@@ -63,3 +63,22 @@ test("sponsor page has requested audience snapshot and logos, with contact only 
   assert.match(route, /\/sponsor/);
   assert.match(readFileSync("app/sponsor/page.tsx", "utf8"), /canonical: "\/sponsor"/);
 });
+
+
+test("home footer replaces Discord with the internal Advertise link", () => {
+  const home = readFileSync("components/reverse-prompt-home.tsx", "utf8");
+  const footer = home.slice(home.indexOf("<footer"), home.indexOf("</footer>"));
+  assert.match(footer, /<Link\s+href="\/sponsor"[\s\S]*?>\s+Advertise\s+<\/Link>/);
+  assert.doesNotMatch(footer, /Discord|discord\.gg/);
+  assert.match(footer, /href="https:\/\/filiksyos.com"/);
+});
+
+
+test("website sponsor includes the official local Afterpack logo", () => {
+  const banner = readFileSync("components/afterpack-banner.tsx", "utf8");
+  assert.match(banner, /src="\/sponsors\/afterpack\.svg"/);
+  assert.match(banner, /alt="Afterpack"/);
+  const logo = readFileSync("public/sponsors/afterpack.svg", "utf8");
+  assert.match(logo, /viewBox="0 0 152 34"/);
+  assert.doesNotMatch(logo, /<script|<foreignObject|https?:\/\/(?!www\.w3\.org)/i);
+});
