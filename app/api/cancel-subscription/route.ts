@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 import { getAuthenticatedUser } from "@/lib/auth-request";
+import { isPremiumOnlySubscription } from "@/lib/premium-subscription";
 
 export const runtime = "nodejs";
 
@@ -133,12 +134,13 @@ export async function POST(req: NextRequest) {
     let primaryCustomerId: string | null = null;
 
     for (const customer of customers) {
-      const subscriptions = await stripe.subscriptions.list({
+      const subscriptions = stripe.subscriptions.list({
         customer: customer.id,
         status: "active",
         limit: 100,
       });
-      for (const sub of subscriptions.data) {
+      for await (const sub of subscriptions) {
+        if (!isPremiumOnlySubscription(sub)) continue;
         const canceled = await stripe.subscriptions.cancel(sub.id);
         canceledIds.push(canceled.id);
         primaryCustomerId ??= customer.id;
@@ -147,7 +149,7 @@ export async function POST(req: NextRequest) {
 
     if (canceledIds.length === 0) {
       return NextResponse.json(
-        { error: "No active subscription found" },
+        { error: "No active Premium subscription found" },
         { status: 400 }
       );
     }

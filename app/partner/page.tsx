@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { PartnerPage } from "@/components/partner-page";
 
 export const metadata: Metadata = {
-  title: "Partner",
+  title: "Sponsor GitReverse",
   description:
-    "Partner with GitReverse and get high-intent visitors to your site.",
+    "Sponsor GitReverse with a small placement in codebase reverse, website reverse, or the GitHub README.",
   robots: { index: false, follow: false },
 };
 

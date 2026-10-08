@@ -1,0 +1,41 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import test from "node:test";
+import { formatSponsorPrice, isSponsorshipPlacement, SPONSORSHIP_PLACEMENTS } from "../lib/sponsorship-config";
+import { isPremiumOnlySubscription } from "../lib/premium-subscription";
+import { STRIPE_PRICE_IDS } from "../lib/billing-config";
+
+test("sponsorship catalog uses the approved monthly USD amounts", () => {
+  assert.deepEqual(Object.values(SPONSORSHIP_PLACEMENTS).map((p) => p.amount), [200000, 200000, 20000, 420000]);
+  assert.equal(formatSponsorPrice(SPONSORSHIP_PLACEMENTS.bundle.amount), "$4,200");
+  assert.equal(isSponsorshipPlacement("bundle"), true);
+  for (const value of ["__proto__", "constructor", "invalid", null, {}, 200]) assert.equal(isSponsorshipPlacement(value), false);
+});
+
+test("Premium cancellation excludes sponsorships, unknown prices and mixed subscriptions", () => {
+  const subscription = (ids: string[], metadata = {}, has_more = false) => ({ metadata, items: { data: ids.map((id) => ({ price: { id } })), has_more } });
+  assert.equal(isPremiumOnlySubscription(subscription([STRIPE_PRICE_IDS.starter])), true);
+  assert.equal(isPremiumOnlySubscription(subscription([STRIPE_PRICE_IDS.partner])), false);
+  assert.equal(isPremiumOnlySubscription(subscription([STRIPE_PRICE_IDS.readmeSponsor])), false);
+  assert.equal(isPremiumOnlySubscription(subscription([STRIPE_PRICE_IDS.starter, "sponsor_price"])), false);
+  assert.equal(isPremiumOnlySubscription(subscription([STRIPE_PRICE_IDS.starter], { type: "sponsorship" })), false);
+  assert.equal(isPremiumOnlySubscription(subscription([STRIPE_PRICE_IDS.starter], {}, true)), false);
+  assert.equal(isPremiumOnlySubscription(subscription([])), false);
+});
+
+test("website reverse replaces its sponsor and keeps codebase sponsorship unchanged", () => {
+  const website = readFileSync("components/website-reverse-page.tsx", "utf8");
+  const codebase = readFileSync("components/reverse-prompt-home.tsx", "utf8");
+  const banner = readFileSync("components/afterpack-banner.tsx", "utf8");
+  assert.match(website, /AfterpackBanner/);
+  assert.doesNotMatch(website, /CodeRabbitBanner/);
+  assert.match(codebase, /CodeRabbitBanner/);
+  assert.match(banner, /https:\/\/afterpack.dev/);
+  assert.match(banner, /Want to make your website irreversible\?/);
+});
+
+test("partner page omits unverified traffic and doesn't claim payment from a URL", () => {
+  const page = readFileSync("components/partner-page.tsx", "utf8");
+  assert.doesNotMatch(page, /35,000|1,000\+|3,000\+|Payment received|within 24 hours/);
+  assert.match(page, /Once verified/);
+});
