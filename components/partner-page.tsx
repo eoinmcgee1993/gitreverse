@@ -1,8 +1,9 @@
 import { Navbar } from "@/components/navbar";
 import { PartnerCheckoutForm } from "@/components/partner-checkout-form";
 import { SPONSOR_CONTACT, sponsorshipMonthLabel } from "@/lib/sponsorship-config";
+import { formatMonthlyVisitors, trafficPeriodLabel, type SponsorTraffic } from "@/lib/sponsorship-analytics";
 
-export function PartnerPage({ checkoutStatus }: { checkoutStatus?: "success" | "cancelled" }) {
+export function PartnerPage({ checkoutStatus, traffic = null, liveTraffic = false }: { checkoutStatus?: "success" | "cancelled"; traffic?: SponsorTraffic | null; liveTraffic?: boolean }) {
   const monthLabel = sponsorshipMonthLabel(new Date());
   return (
     <div className="flex min-h-screen flex-col bg-[#FFFDF8] text-zinc-900">
@@ -14,9 +15,9 @@ export function PartnerPage({ checkoutStatus }: { checkoutStatus?: "success" | "
           <p className="mt-5 max-w-xl text-base leading-relaxed text-zinc-600">A small, clearly labeled spot for your product, where developers reverse-engineer codebases and websites.</p>
           <dl className="mt-8 grid max-w-lg grid-cols-2 gap-6">
             <div><dd className="text-3xl font-bold tracking-tight sm:text-4xl">250K+</dd><dt className="mt-1 text-sm text-zinc-600">Lifetime visitors</dt></div>
-            <div><dd className="text-3xl font-bold tracking-tight sm:text-4xl">35K</dd><dt className="mt-1 text-sm text-zinc-600">Visitors in September 2026</dt></div>
+            <div title={traffic ? `${trafficPeriodLabel(traffic)}. Returning visitors may count again on different days.` : "Monthly traffic is temporarily unavailable."}><dd className="text-3xl font-bold tracking-tight sm:text-4xl">{traffic ? formatMonthlyVisitors(traffic.visitors) : "—"}</dd><dt className="mt-1 text-sm text-zinc-600">visitors last month</dt></div>
           </dl>
-          <p className="mt-3 text-xs text-zinc-400">Audience snapshot · October 2026</p>
+          <p className="mt-3 text-xs text-zinc-400">{liveTraffic ? "Monthly traffic updates hourly" : traffic ? "Audience snapshot · October 2026" : "Monthly traffic temporarily unavailable"}</p>
         </header>
         <section aria-label="Previous sponsors" className="my-10 border-y border-zinc-200 py-5">
           <p className="text-xs text-zinc-500">Previous sponsors</p>

@@ -51,7 +51,7 @@ test("sponsor page has requested audience snapshot and logos, with contact only 
   const page = readFileSync("components/partner-page.tsx", "utf8");
   assert.match(page, /Reach a massive/);
   assert.match(page, /250K\+/);
-  assert.match(page, /Visitors in September 2026/);
+  assert.match(page, /visitors last month/);
   assert.doesNotMatch(page.split("</header>")[0], /mailto:/);
   for (const asset of ["coderabbit.png", "make-design.png", "arcumet.png"]) {
     assert.match(page, new RegExp(asset.replace(".", "\\.")));
