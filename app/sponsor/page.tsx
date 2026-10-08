@@ -24,7 +24,7 @@ const getCachedAudience = unstable_cache(async () => {
   } catch {
     return null;
   }
-}, ["sponsorship-audience-v1"], { revalidate: 3600 });
+}, ["sponsorship-audience-v2"], { revalidate: 3600 });
 
 type PartnerRouteProps = {
   searchParams: Promise<{ checkout?: string }>;
