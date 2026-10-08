@@ -487,6 +487,15 @@ export function ReversePromptHome({
                         </div>
                       ))}
                     </div>
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-900/15 bg-white/50 px-3 py-2.5">
+                      <p className="text-xs text-zinc-600">Advertise your website</p>
+                      <Link
+                        href="/sponsor"
+                        className="shrink-0 rounded border border-zinc-300 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-700 transition-colors hover:border-zinc-500 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2"
+                      >
+                        Claim spot
+                      </Link>
+                    </div>
                   </div>
                 ) : null}
               </form>
@@ -606,14 +615,11 @@ export function ReversePromptHome({
                 </ReactMarkdown>
               </div>
               {!loading && (!isHome || homeMode === "codebase") ? (
-                <div>
-                  <CodeRabbitBanner
-                    className="mt-4 w-full"
-                    embedded
-                    placement="repo-card"
-                  />
-                  <Link href="/sponsor" className="mt-2 block text-right text-[10px] text-zinc-500 underline-offset-2 hover:underline">Sponsor this spot</Link>
-                </div>
+                <CodeRabbitBanner
+                  className="mt-4 w-full"
+                  embedded
+                  placement="repo-card"
+                />
               ) : null}
             </section>
           </div>
@@ -635,12 +641,14 @@ export function ReversePromptHome({
             <span className="mx-2 text-zinc-300" aria-hidden>
               ·
             </span>
-            <Link
-              href="/sponsor"
+            <a
+              href="https://discord.gg/eHN86K7rBj"
+              target="_blank"
+              rel="noopener noreferrer"
               className="font-medium text-[#d31611] underline decoration-[#d31611] underline-offset-2 transition-colors hover:text-[#b0120e] hover:decoration-[#b0120e]"
             >
-              Advertise
-            </Link>
+              Discord
+            </a>
           </p>
         </footer>
       ) : null}
