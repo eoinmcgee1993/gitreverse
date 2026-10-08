@@ -1,6 +1,6 @@
 # Sponsorship checkout
 
-Four fixed monthly USD offers use Stripe-hosted subscription Checkout. The application accepts placement, website, email, ad copy, and a retry-stable UUID. It does not accept prices or amounts from the browser. The API retrieves and validates each live price before creating Checkout. Repeat requests with the same UUID use Stripe idempotency. It never publishes an ad.
+Four fixed monthly USD offers use Stripe-hosted subscription Checkout. The application accepts placement, website, email, ad copy, and a retry-stable UUID. It does not accept prices or amounts from the browser. The API uses an immutable server-owned live price allowlist, verified against Stripe and covered by catalog tests. Stripe Checkout validates the selected price; it does not add a separate Prices-read permission requirement. Repeat requests with the same UUID use Stripe idempotency. It never publishes an ad.
 
 | Placement | Monthly USD | Live price |
 | --- | ---: | --- |
@@ -27,7 +27,7 @@ A successful-payment alert should include the placement, monthly amount, sponsor
 
 ## Configuration and security
 
-Reuse the existing server-only Stripe credential. Do not read, copy, commit, or expose its value. A restricted key requires Prices read and Checkout Sessions write for this flow; changing credential permissions requires separate authorization. Source remains compatible with the deployed Stripe SDK 17.7.0 and managed sync's 2025-02-24 API. Upgrade these together rather than silently changing production payload formats.
+Reuse the existing server-only Stripe credential. Do not read, copy, commit, or expose its value. A restricted key requires Checkout Sessions write for this flow; changing credential permissions requires separate authorization. Source remains compatible with the deployed Stripe SDK 17.7.0 and managed sync's 2025-02-24 API. Upgrade these together rather than silently changing production payload formats.
 
 Public post-Checkout links are fixed to `https://gitreverse.com`; an arbitrary Origin header cannot change them. No promotion codes, free trials, variable quantities, or user-selected amounts are enabled.
 
@@ -35,4 +35,4 @@ Tax behavior is currently unspecified, consistent with existing sponsorship pric
 
 ## Verification
 
-Run `node --import tsx --test tests/sponsorship-checkout.test.ts`, TypeScript, lint, and production build. Verify all four UI choices and repeated submission behavior. In an isolated sandbox use separate test catalog IDs (do not submit live payment details for a test). Live payments and end-to-end paid delivery were not executed by this change. Confirm the monitor with a legitimately paid session after launch and manually verify the owner received the alert.
+Run `node --import tsx --test tests/sponsorship-checkout.test.ts`, TypeScript, lint, and production build. Verify all four UI choices and repeated submission behavior. In an isolated sandbox use separate test catalog IDs (do not submit live payment details for a test). Hosted Checkout creation was verified directly through the Stripe connector for the new README price, without a charge. The original production endpoint also returned a hosted URL. The updated protected preview endpoint still needs a permitted end-to-end check. Live payments and end-to-end paid delivery were not executed by this change. Confirm the monitor with a legitimately paid session after launch and manually verify the owner received the alert.

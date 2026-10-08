@@ -81,4 +81,4 @@ pnpm test:library
 
 `test:library` runs credential-free regression tests for library filtering, source fallbacks, and outage handling.
 
-[Sponsor GitReverse](https://gitreverse.com/partner)
+[Sponsor GitReverse](https://gitreverse.com/sponsor)

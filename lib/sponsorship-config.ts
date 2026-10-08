@@ -14,3 +14,8 @@ export function formatSponsorPrice(amount: number): string {
 export function isSponsorshipPlacement(value: unknown): value is SponsorshipPlacement {
   return typeof value === "string" && Object.hasOwn(SPONSORSHIP_PLACEMENTS, value);
 }
+
+/** UTC keeps server-rendered labels stable across visitor time zones. */
+export function sponsorshipMonthLabel(date: Date): string {
+  return new Intl.DateTimeFormat("en-US", { month: "long", timeZone: "UTC" }).format(date);
+}

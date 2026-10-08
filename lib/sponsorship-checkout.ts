@@ -46,11 +46,42 @@ export function sponsorshipSessionParams(input: SponsorshipInput): Stripe.Checko
     mode: "subscription",
     line_items: [{ price: SPONSORSHIP_PRICE_IDS[input.placement], quantity: 1 }],
     // Fixed trusted origin. A user-controlled Origin header must never set redirect targets.
-    success_url: "https://gitreverse.com/partner?checkout=success",
-    cancel_url: "https://gitreverse.com/partner?checkout=cancelled",
+    success_url: "https://gitreverse.com/sponsor?checkout=success",
+    cancel_url: "https://gitreverse.com/sponsor?checkout=cancelled",
     customer_email: input.email,
     metadata,
     subscription_data: { metadata },
     custom_text: { submit: { message: "Monthly sponsorship. Filiksyos manually places your ad after payment. Contact contact@gitmvp.com for placement or cancellation." } },
+  };
+}
+
+
+/** No catalog-read permission is needed: the buyer cannot select a price ID. */
+export async function createSponsorshipSession(
+  stripe: Pick<Stripe, "checkout">,
+  input: SponsorshipInput,
+) {
+  return stripe.checkout.sessions.create(sponsorshipSessionParams(input), {
+    idempotencyKey: `gitreverse-sponsor-${input.requestId}`,
+  });
+}
+
+const STRIPE_ERROR_TYPES = new Set([
+  "StripeAuthenticationError", "StripePermissionError", "StripeInvalidRequestError",
+  "StripeAPIError", "StripeConnectionError", "StripeRateLimitError", "StripeIdempotencyError",
+]);
+const STRIPE_ERROR_CODES = new Set([
+  "api_key_expired", "resource_missing", "parameter_missing", "parameter_unknown",
+  "parameter_invalid_empty", "parameter_invalid_integer", "parameter_invalid_string_blank",
+  "parameter_invalid_string_empty", "parameter_invalid_url", "parameter_invalid_enum",
+  "idempotency_key_in_use", "rate_limit", "lock_timeout",
+]);
+export function safeStripeFailure(error: unknown) {
+  const raw = error && typeof error === "object" ? error as Record<string, unknown> : {};
+  return {
+    stage: "create_checkout",
+    type: typeof raw.type === "string" && STRIPE_ERROR_TYPES.has(raw.type) ? raw.type : "unknown",
+    code: typeof raw.code === "string" && STRIPE_ERROR_CODES.has(raw.code) ? raw.code : "unclassified",
+    status: typeof raw.statusCode === "number" && Number.isInteger(raw.statusCode) && raw.statusCode >= 400 && raw.statusCode <= 599 ? raw.statusCode : undefined,
   };
 }

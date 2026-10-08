@@ -612,7 +612,7 @@ export function ReversePromptHome({
                     embedded
                     placement="repo-card"
                   />
-                  <Link href="/partner" className="mt-2 block text-right text-[10px] text-zinc-500 underline-offset-2 hover:underline">Sponsor this spot</Link>
+                  <Link href="/sponsor" className="mt-2 block text-right text-[10px] text-zinc-500 underline-offset-2 hover:underline">Sponsor this spot</Link>
                 </div>
               ) : null}
             </section>

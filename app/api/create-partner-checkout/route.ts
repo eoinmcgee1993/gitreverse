@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { parseSponsorshipInput, sponsorshipSessionParams, SPONSORSHIP_PRICE_IDS, validSponsorshipPrice } from "@/lib/sponsorship-checkout";
+import { parseSponsorshipInput, createSponsorshipSession, safeStripeFailure } from "@/lib/sponsorship-checkout";
 
 export const runtime = "nodejs";
 
@@ -18,17 +18,15 @@ export async function POST(req: NextRequest) {
   // Match the existing Stripe sync integration's API version; upgrade both together.
   const stripe = new Stripe(key, { apiVersion: "2025-02-24.acacia" });
   try {
-    const price = await stripe.prices.retrieve(SPONSORSHIP_PRICE_IDS[input.placement]);
-    if (!validSponsorshipPrice(price, input.placement)) {
-      return NextResponse.json({ message: "This sponsorship is temporarily unavailable. Email contact@gitmvp.com." }, { status: 503 });
-    }
-    const session = await stripe.checkout.sessions.create(sponsorshipSessionParams(input), {
-      idempotencyKey: `gitreverse-sponsor-${input.requestId}`,
-    });
+    // Exact, immutable server-owned price IDs are validated in our catalog tests.
+    // Checkout validates the selected price itself; a separate Prices-read call
+    // would unnecessarily require broader permissions on the existing key.
+    const session = await createSponsorshipSession(stripe, input);
     if (!session.url) throw new Error("Missing checkout URL");
     return NextResponse.json({ url: session.url });
-  } catch {
-    // Never expose Stripe error objects, credentials, or customer details in logs/responses.
+  } catch (error) {
+    // Log only fixed classifications, never messages, credentials, or customer data.
+    console.error("[sponsorship-checkout]", safeStripeFailure(error));
     return NextResponse.json({ message: "Could not start checkout. Try again or email contact@gitmvp.com." }, { status: 502 });
   }
 }

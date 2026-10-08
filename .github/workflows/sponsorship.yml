@@ -6,6 +6,8 @@ on:
       - 'app/api/create-partner-checkout/**'
       - 'app/api/cancel-subscription/**'
       - 'app/partner/**'
+      - 'app/sponsor/**'
+      - 'public/sponsors/**'
       - 'components/partner-*.tsx'
       - 'components/afterpack-banner.tsx'
       - 'components/website-reverse-page.tsx'

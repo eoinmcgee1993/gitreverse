@@ -16,7 +16,7 @@ export function AfterpackBanner({ className = "" }: { className?: string }) {
         Want to make your website irreversible? <span className="font-semibold text-zinc-900 underline underline-offset-2">Try Afterpack.</span>
         <span className="sr-only"> Sponsored, opens in a new tab</span>
       </a>
-      <Link href="/partner" className="shrink-0 text-[10px] text-zinc-500 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4">Sponsor this spot</Link>
+      <Link href="/sponsor" className="shrink-0 text-[10px] text-zinc-500 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4">Sponsor this spot</Link>
     </div>
   );
 }

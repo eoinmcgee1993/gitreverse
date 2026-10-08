@@ -5,7 +5,7 @@ import { formatSponsorPrice, SPONSORSHIP_PLACEMENTS, type SponsorshipPlacement }
 
 const inputClass = "mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:opacity-60";
 
-export function PartnerCheckoutForm() {
+export function PartnerCheckoutForm({ monthLabel }: { monthLabel: string }) {
   const [placement, setPlacement] = useState<SponsorshipPlacement>("codebase");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,9 +58,9 @@ export function PartnerCheckoutForm() {
         <label className="text-sm font-medium" htmlFor="sponsor-email">Contact email<input id="sponsor-email" name="email" type="email" autoComplete="email" placeholder="you@company.com" maxLength={254} required disabled={loading} className={inputClass} /></label>
       </div>
       <label className="block text-sm font-medium" htmlFor="sponsor-copy">One-line ad copy<input id="sponsor-copy" name="adCopy" type="text" placeholder="What does your product help builders do?" minLength={5} maxLength={120} required disabled={loading} className={inputClass} /><span className="mt-1.5 block text-xs font-normal text-zinc-500">Up to 120 characters. We’ll arrange the final creative with you.</span></label>
-      <p className="text-sm leading-relaxed text-zinc-600">Billed monthly in USD until cancelled. Pay securely with Stripe. After payment is verified, we’ll arrange your placement manually.</p>
+      <p className="text-sm leading-relaxed text-zinc-600">Billed monthly in USD from your purchase date until cancelled. Pay securely with Stripe. After payment is verified, we’ll arrange your placement manually.</p>
       {error ? <p role="alert" className="text-sm text-red-700">{error}</p> : null}
-      <button type="submit" disabled={loading} className="w-full rounded-lg bg-zinc-900 px-5 py-3 text-sm font-semibold text-white hover:bg-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-wait disabled:opacity-60">{loading ? "Opening Stripe…" : `Buy sponsorship · ${formatSponsorPrice(selected.amount)}/month`}</button>
+      <button type="submit" disabled={loading} className="w-full rounded-lg bg-zinc-900 px-5 py-3 text-sm font-semibold text-white hover:bg-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-wait disabled:opacity-60">{loading ? "Opening Stripe…" : `Buy sponsorship for ${monthLabel} · ${formatSponsorPrice(selected.amount)}/month`}</button>
     </form>
   );
 }
