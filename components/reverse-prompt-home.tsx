@@ -487,6 +487,15 @@ export function ReversePromptHome({
                         </div>
                       ))}
                     </div>
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-900/15 bg-white/50 px-3 py-2.5">
+                      <p className="text-xs text-zinc-600">Advertise your website</p>
+                      <Link
+                        href="/sponsor"
+                        className="shrink-0 rounded border border-zinc-300 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-700 transition-colors hover:border-zinc-500 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2"
+                      >
+                        Claim spot
+                      </Link>
+                    </div>
                   </div>
                 ) : null}
               </form>

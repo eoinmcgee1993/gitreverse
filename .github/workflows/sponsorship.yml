@@ -1,0 +1,40 @@
+name: Sponsorship regressions
+
+on:
+  pull_request:
+    paths:
+      - 'app/api/create-partner-checkout/**'
+      - 'app/api/cancel-subscription/**'
+      - 'app/partner/**'
+      - 'app/sponsor/**'
+      - 'public/sponsors/**'
+      - 'components/partner-*.tsx'
+      - 'components/afterpack-banner.tsx'
+      - 'components/website-reverse-page.tsx'
+      - 'components/reverse-prompt-home.tsx'
+      - 'lib/sponsor*.ts'
+      - 'lib/premium-subscription.ts'
+      - 'tests/sponsor*.test.ts'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/sponsorship.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  sponsorship:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.11.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: node --import tsx --test tests/sponsor*.test.ts
+      - run: pnpm exec tsc --noEmit
+      - run: pnpm exec eslint components/partner-page.tsx components/partner-checkout-form.tsx components/afterpack-banner.tsx lib/sponsor*.ts lib/premium-subscription.ts app/api/create-partner-checkout/route.ts app/api/cancel-subscription/route.ts tests/sponsor*.test.ts

@@ -1,229 +1,66 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import Link from "next/link";
+import { useRef, useState } from "react";
+import { formatSponsorPrice, SPONSORSHIP_PLACEMENTS, type SponsorshipPlacement } from "@/lib/sponsorship-config";
 
-type ButtonLabelType = "design_this" | "build_this" | "custom";
+const inputClass = "mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:opacity-60";
 
-const BUTTON_OPTIONS: {
-  value: ButtonLabelType;
-  label: string;
-  example?: string;
-}[] = [
-  { value: "design_this", label: "Design This", example: "Design This" },
-  { value: "build_this", label: "Build This", example: "Build This" },
-  { value: "custom", label: "Custom", example: "Review This" },
-];
-
-function FieldLabel({
-  htmlFor,
-  children,
-}: {
-  htmlFor: string;
-  children: ReactNode;
-}) {
-  return (
-    <label
-      htmlFor={htmlFor}
-      className="mb-1.5 block text-sm font-bold text-zinc-900"
-    >
-      {children}
-    </label>
-  );
-}
-
-function inputClassName(disabled = false) {
-  return `block w-full rounded-lg border-[2.5px] border-zinc-900 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:opacity-60 ${disabled ? "" : ""}`;
-}
-
-export function PartnerCheckoutForm() {
-  const [website, setWebsite] = useState("");
-  const [email, setEmail] = useState("");
-  const [buttonLabelType, setButtonLabelType] =
-    useState<ButtonLabelType>("design_this");
-  const [customButtonLabel, setCustomButtonLabel] = useState("");
+export function PartnerCheckoutForm({ monthLabel }: { monthLabel: string }) {
+  const [placement, setPlacement] = useState<SponsorshipPlacement>("codebase");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const submitting = useRef(false);
+  const attempt = useRef<{ payload: string; requestId: string } | null>(null);
+  const selected = SPONSORSHIP_PLACEMENTS[placement];
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (submitting.current) return;
+    submitting.current = true;
     setError(null);
     setLoading(true);
-
+    const data = new FormData(event.currentTarget);
+    const payload = JSON.stringify({ placement, website: data.get("website"), email: data.get("email"), adCopy: data.get("adCopy") });
+    if (attempt.current?.payload !== payload) attempt.current = { payload, requestId: crypto.randomUUID() };
     try {
       const res = await fetch("/api/create-partner-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          website,
-          email,
-          buttonLabelType,
-          customButtonLabel:
-            buttonLabelType === "custom" ? customButtonLabel : undefined,
-        }),
+        body: JSON.stringify({ ...JSON.parse(payload), requestId: attempt.current.requestId }),
       });
-
-      const data = (await res.json()) as { url?: string; message?: string };
-      if (!res.ok || !data.url) {
-        throw new Error(data.message || "Could not start checkout.");
-      }
-
-      window.location.href = data.url;
+      const result = (await res.json()) as { url?: string; message?: string };
+      if (!res.ok || !result.url) throw new Error(result.message || "Could not start checkout. Please try again.");
+      const checkoutUrl = new URL(result.url);
+      if (checkoutUrl.protocol !== "https:" || checkoutUrl.hostname !== "checkout.stripe.com") throw new Error("Could not open secure checkout.");
+      window.location.assign(checkoutUrl.toString());
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Could not start checkout."
-      );
+      setError(err instanceof Error ? err.message : "Could not start checkout.");
+      submitting.current = false;
       setLoading(false);
     }
   }
 
   return (
-    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5 text-left">
-      <div>
-        <FieldLabel htmlFor="partner-website">Your website</FieldLabel>
-        <input
-          id="partner-website"
-          type="text"
-          inputMode="url"
-          autoComplete="url"
-          required
-          value={website}
-          onChange={(e) => setWebsite(e.target.value)}
-          placeholder="yourcompany.com"
-          className={inputClassName(loading)}
-          disabled={loading}
-        />
-      </div>
-
-      <div>
-        <FieldLabel htmlFor="partner-email">Your email</FieldLabel>
-        <input
-          id="partner-email"
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@company.com"
-          className={inputClassName(loading)}
-          disabled={loading}
-        />
-      </div>
-
-      <fieldset>
-        <legend className="mb-2 block text-sm font-bold text-zinc-900">
-          Button label
-        </legend>
-        <div className="grid gap-2 sm:grid-cols-3">
-          {BUTTON_OPTIONS.map((option) => {
-            const selected = buttonLabelType === option.value;
-            return (
-              <label
-                key={option.value}
-                className={`relative cursor-pointer rounded-lg border-[2.5px] px-3 py-3 transition-colors ${
-                  selected
-                    ? "border-zinc-900 bg-[#ffc480]"
-                    : "border-zinc-300 bg-white hover:border-zinc-900"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="button-label"
-                  value={option.value}
-                  checked={selected}
-                  onChange={() => setButtonLabelType(option.value)}
-                  className="sr-only"
-                  disabled={loading}
-                />
-                <span className="block text-sm font-bold text-zinc-900">
-                  {option.label}
-                </span>
-                {option.example ? (
-                  <span className="mt-0.5 block text-xs text-zinc-600">
-                    e.g. {option.example}
-                  </span>
-                ) : null}
-              </label>
-            );
-          })}
+    <form onSubmit={(event) => void handleSubmit(event)} className="space-y-6">
+      <fieldset disabled={loading}>
+        <legend className="mb-3 text-sm font-semibold">Choose your placement</legend>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {(Object.entries(SPONSORSHIP_PLACEMENTS) as [SponsorshipPlacement, typeof selected][]).map(([id, option]) => (
+            <label key={id} className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 ${placement === id ? "border-zinc-900 bg-[#fff4da]" : "border-zinc-200 bg-white hover:border-zinc-400"}`}>
+              <input type="radio" name="placement" value={id} checked={placement === id} onChange={() => setPlacement(id)} className="mt-1 accent-zinc-900" />
+              <span><span className="block text-sm font-semibold">{option.name}</span><span className="mt-1 block text-xl font-bold">{formatSponsorPrice(option.amount)} <span className="text-xs font-normal text-zinc-500">USD / month</span></span><span className="mt-2 block text-xs leading-relaxed text-zinc-600">{option.description}</span></span>
+            </label>
+          ))}
         </div>
       </fieldset>
-
-      {buttonLabelType === "custom" ? (
-        <div>
-          <FieldLabel htmlFor="partner-custom-label">Custom button text</FieldLabel>
-          <input
-            id="partner-custom-label"
-            type="text"
-            required
-            value={customButtonLabel}
-            onChange={(e) => setCustomButtonLabel(e.target.value)}
-            placeholder="Review This"
-            maxLength={40}
-            className={inputClassName(loading)}
-            disabled={loading}
-          />
-        </div>
-      ) : null}
-
-      <div className="rounded-lg border border-zinc-200 bg-[#fff4da] px-4 py-3 text-sm text-zinc-700">
-        <p className="font-semibold text-zinc-900">$999 / month</p>
-        <ul className="mt-2 space-y-1.5">
-          <li>Your button goes live within 24 hours of payment.</li>
-          <li>
-            You&apos;ll receive partnership updates and performance reports by
-            email.
-          </li>
-          <li>
-            We&apos;ll also post about the partnership on{" "}
-            <Link
-              href="https://x.com/filiksyos"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-zinc-900 underline decoration-zinc-400 underline-offset-2"
-            >
-              X
-            </Link>{" "}
-            to promote it.
-          </li>
-        </ul>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="text-sm font-medium" htmlFor="sponsor-website">Your website<input id="sponsor-website" name="website" type="text" inputMode="url" autoComplete="url" placeholder="yourcompany.com" maxLength={450} required disabled={loading} className={inputClass} /></label>
+        <label className="text-sm font-medium" htmlFor="sponsor-email">Contact email<input id="sponsor-email" name="email" type="email" autoComplete="email" placeholder="you@company.com" maxLength={254} required disabled={loading} className={inputClass} /></label>
       </div>
-
-      {error ? (
-        <p className="text-sm font-semibold text-[#d31611]" role="alert">
-          {error}
-        </p>
-      ) : null}
-
-      <div className="group relative">
-        <div className="absolute inset-0 translate-x-1 translate-y-1 rounded-lg bg-zinc-900 transition-transform group-hover:translate-x-0.5 group-hover:translate-y-0.5" />
-        <button
-          type="submit"
-          disabled={loading}
-          className="relative z-10 w-full rounded-lg border-[3px] border-zinc-900 bg-[#d31611] px-5 py-3 text-sm font-bold text-white transition-transform group-hover:-translate-x-px group-hover:-translate-y-px disabled:pointer-events-none disabled:opacity-70"
-        >
-          {loading ? "Redirecting to checkout…" : "Checkout — $999/month"}
-        </button>
-      </div>
-
-      <p className="text-center text-sm text-zinc-600">
-        Questions? Email{" "}
-        <a
-          href="mailto:fili@gitreverse.com"
-          className="font-semibold text-zinc-900 underline decoration-zinc-400 underline-offset-2"
-        >
-          fili@gitreverse.com
-        </a>{" "}
-        or DM{" "}
-        <Link
-          href="https://x.com/filiksyos"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-semibold text-zinc-900 underline decoration-zinc-400 underline-offset-2"
-        >
-          @filiksyos on X
-        </Link>
-        .
-      </p>
+      <label className="block text-sm font-medium" htmlFor="sponsor-copy">One-line ad copy<input id="sponsor-copy" name="adCopy" type="text" placeholder="What does your product help builders do?" minLength={5} maxLength={120} required disabled={loading} className={inputClass} /><span className="mt-1.5 block text-xs font-normal text-zinc-500">Up to 120 characters. We’ll arrange the final creative with you.</span></label>
+      <p className="text-sm leading-relaxed text-zinc-600">Billed monthly in USD from your purchase date until cancelled. Pay securely with Stripe. After payment is verified, we’ll arrange your placement manually.</p>
+      {error ? <p role="alert" className="text-sm text-red-700">{error}</p> : null}
+      <button type="submit" disabled={loading} className="w-full rounded-lg bg-zinc-900 px-5 py-3 text-sm font-semibold text-white hover:bg-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-wait disabled:opacity-60">{loading ? "Opening Stripe…" : `Buy sponsorship for ${monthLabel} · ${formatSponsorPrice(selected.amount)}/month`}</button>
     </form>
   );
 }
