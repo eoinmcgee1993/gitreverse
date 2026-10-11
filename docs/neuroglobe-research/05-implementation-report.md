@@ -40,7 +40,7 @@ Reusable components: URL parsing/slug validation, existing website reverse pipel
 
 ## 5. What was implemented on the branch
 
-The branch is intended to contain:
+The branch now contains:
 - Research dossier and source/claim ledger.
 - Original product specification and 30-day curriculum.
 - Commercial copy, launch emails, social plan and validation hypotheses.
@@ -64,7 +64,7 @@ Existing environment variables may be required by some unrelated scripts; do not
 
 ## 7. Deployment status and next steps
 
-A branch commit is not a production deployment. If the repository is linked to Vercel, a branch push may trigger a preview deployment, but this must be confirmed from actual deployment records. No production deployment or domain change should be claimed without a verified deployment URL and successful build.
+The branch includes the research assets, schema, retry utility and test suite. A branch commit is not a production deployment. If the repository is linked to Vercel, a branch push may trigger a preview deployment, but this must be confirmed from actual deployment records. No production deployment or domain change should be claimed without a verified deployment URL and successful build.
 
 Recommended next steps:
 1. Confirm branch contents and commit history.
