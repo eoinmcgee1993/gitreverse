@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test:titles": "node --env-file=.env.local scripts/test-titles.mjs",
     "test:kernel": "tsx --test scripts/test-quaternius-kernel.ts",
-    "db:migrate:title": "node --env-file=.env.local scripts/apply-title-migration.mjs"
+    "db:migrate:title": "node --env-file=.env.local scripts/apply-title-migration.mjs",
+    "test:research-schema": "tsx --test scripts/test-research-output-schema.ts"
   },
   "dependencies": {
     "@gltf-transform/core": "^4.4.2",
