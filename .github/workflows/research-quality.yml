@@ -1,0 +1,51 @@
+name: Research output quality
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/research-output-schema.ts"
+      - "lib/research-retry.ts"
+      - "scripts/test-research-output-schema.ts"
+      - "docs/neuroglobe-research/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/research-quality.yml"
+  push:
+    branches: [feature/neuroglobe-evidence-product]
+    paths:
+      - "lib/research-output-schema.ts"
+      - "lib/research-retry.ts"
+      - "scripts/test-research-output-schema.ts"
+      - "docs/neuroglobe-research/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/research-quality.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Test research schema and retry handling
+        run: pnpm test:research-schema
+      - name: Type check
+        run: pnpm exec tsc --noEmit
+      - name: Lint
+        run: pnpm lint
+      - name: Build
+        run: pnpm build
+        env:
+          VIEWS_IP_SALT: ci-only-non-secret-salt-for-build
