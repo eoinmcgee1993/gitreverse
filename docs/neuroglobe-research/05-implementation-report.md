@@ -50,7 +50,7 @@ No production route has been changed by this first pass. This is deliberate: wir
 
 ## 6. Test status
 
-**Not executed in this hosted session.** The GitHub connector can read/write repository files but does not provide a checked-out working tree, installed dependencies, Node execution or a local browser. Do not interpret the presence of test files as passing tests. Required next commands from a checkout:
+**Local tests not executed in this hosted session.** GitHub Actions was configured to run schema tests, type-check, lint and build. The first observed run stopped at `pnpm/action-setup` before any project checks ran; the workflow was corrected to pin pnpm 9.15.9. A successful follow-up run has not yet been verified, so no test is reported as passing. The GitHub connector does not provide a checked-out working tree or local Node execution. Do not interpret the presence of test files as passing tests. Required commands from a checkout:
 
 ```bash
 pnpm install --frozen-lockfile
@@ -64,7 +64,7 @@ Existing environment variables may be required by some unrelated scripts; do not
 
 ## 7. Deployment status and next steps
 
-The branch includes the research assets, schema, retry utility and test suite. A branch commit is not a production deployment. If the repository is linked to Vercel, a branch push may trigger a preview deployment, but this must be confirmed from actual deployment records. No production deployment or domain change should be claimed without a verified deployment URL and successful build.
+The branch includes the research assets, schema, retry utility and test suite. A branch commit is not a production deployment. The Vercel project lookup returned no project named or matching `gitreverse`, and no GitReverse deployment was found in the deployment query. Therefore this branch has not been deployed. Do not create a duplicate Vercel project or deploy the main branch as a substitute. A Vercel project linked to this repository (or the intended deployment target) must be identified/configured before a preview deployment can be verified.
 
 Recommended next steps:
 1. Confirm branch contents and commit history.
