@@ -1,4 +1,7 @@
+"use client";
+
 import { track } from "@vercel/analytics";
+import { FounderExperimentSlot } from "@/components/founder-card";
 
 const CODERABBIT_AFFILIATE_URL = "https://coderabbit.link/filiksyos-destaw";
 const CODERABBIT_ICON_URL =
@@ -36,7 +39,15 @@ function copyForPlacement(
   return BANNER_COPY.default;
 }
 
-export function CodeRabbitBanner({
+export function CodeRabbitBanner(props: CodeRabbitBannerProps) {
+  const placement = props.placement ?? (props.embedded ? "home-card" : "repo-card");
+  const original = <OriginalCodeRabbitBanner {...props} />;
+  return placement === "repo-card"
+    ? <FounderExperimentSlot fallback={original} className={props.className} />
+    : original;
+}
+
+function OriginalCodeRabbitBanner({
   className,
   embedded = false,
   placement,
